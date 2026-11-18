@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rulerz | Premium Digital Products</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #050505; color: #f5f5fa; font-family: 'Inter', sans-serif; overflow-x: hidden;
+            background-image: linear-gradient(rgba(255, 107, 53, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 107, 53, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px; background-position: center;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+        a { text-decoration: none; color: inherit; }
+        input[type="text"], select, textarea {
+            width: 100%; padding: 0.8rem; background: #0a0a0f; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Inter', sans-serif;
+        }
+        select option { background: #12121a; color: #fff; }
+        
+        /* Responsive Navbar */
+        nav { 
+            padding: 1.2rem 5vw; display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(5, 5, 5, 0.8); 
+            backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; 
+        }
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; }
+        .logo span { color: #ff6b35; text-shadow: 0 0 15px rgba(255, 107, 53, 0.5); }
+        
+        .nav-links { display: flex; align-items: center; gap: 2rem; }
+        .nav-links a { font-size: 0.95rem; color: #9a9aad; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover { color: #fff; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 5vw; position: relative; z-index: 2; flex: 1; width: 100%; }
+        
+        /* Buttons */
+        .btn { padding: 0.8rem 1.8rem; border-radius: 100px; font-weight: 600; cursor: pointer; border: none; font-family: 'Space Grotesk', sans-serif; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: inline-block; }
+        .btn-primary { background: linear-gradient(135deg, #ff6b35, #ffb347); color: #fff; box-shadow: 0 10px 20px -5px rgba(255, 107, 53, 0.4); }
+        .btn-primary:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 20px 40px -5px rgba(255, 107, 53, 0.6); }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: #fff; }
+
+        /* Reveal Animations */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Premium Footer */
+        footer { background: rgba(10,10,15,0.9); border-top: 1px solid rgba(255,255,255,0.05); padding: 4rem 5vw 2rem; margin-top: auto; position: relative; z-index: 2; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; max-width: 1200px; margin: 0 auto; }
+        .footer-brand h2 { font-family: 'Space Grotesk'; font-size: 1.8rem; margin-bottom: 1rem; }
+        .footer-brand p { color: #9a9aad; font-size: 0.9rem; max-width: 300px; }
+        .footer-links h4 { font-family: 'Space Grotesk'; margin-bottom: 1rem; color: #fff; }
+        .footer-links a { display: block; color: #9a9aad; font-size: 0.9rem; margin-bottom: 0.8rem; transition: color 0.3s; }
+        .footer-links a:hover { color: #ff6b35; }
+        .footer-bottom { max-width: 1200px; margin: 3rem auto 0; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; color: #9a9aad; font-size: 0.85rem; flex-wrap: wrap; gap: 1rem; }
+        .footer-bottom a { color: #ff6b35; font-weight: 600; }
+
+        /* 📱 Mobile Responsive CSS */
+        .hamburger { display: none; cursor: pointer; font-size: 1.8rem; color: #fff; z-index: 101; position: relative; }
+        
+        @media (max-width: 768px) {
+            /* Mobile Logo aur Nav fix */
+            .logo { font-size: 1.3rem; z-index: 101; position: relative; }
+            .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: rgba(10,10,15,0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 2rem; gap: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .nav-links.active { display: flex; }
+            .hamburger { display: block; }
+            .footer-bottom { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'landing' %}" class="logo">Rulerz<span>.store</span></a>
+        
+        <div class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('active')">☰</div>
+
+        <div class="nav-links">
+            <a href="{% url 'free_notes' %}" style="color: #22c55e; font-weight: 600;">Free Notes 🎁</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <span style="color: #fff; font-size: 0.9rem;">Hi, {{ user.username }}</span>
+                <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem; cursor: pointer;">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+    
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h2>Rulerz<span style="color:#ff6b35;">.store</span></h2>
+                <p>The ultimate destination for creators to buy and sell high-quality digital products, templates, and guides.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <a href="{% url 'landing' %}">Intro Page</a>
+                <a href="{% url 'free_notes' %}">Free Notes</a>
+                <a href="{% url 'home' %}">Store Home</a>
+                <a href="{% url 'dashboard' %}">My Library</a>
+                <a href="{% url 'terms' %}">Terms of Service</a>
+                <a href="{% url 'privacy' %}">Privacy Policy</a>
+            </div>
+            <div class="footer-links">
+                <h4>Support</h4>
+                <a href="https://www.instagram.com/sir._.ruler?xtok=MTExZ3g0ejZzOHg5eA==" target="_blank">Contact Us</a>
+                <a href="{% url 'refund' %}">Refund Policy</a>
+                <a href="https://t.me/axv_god" target="_blank">Telegram</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Rulerz.store All rights reserved.</p>
+            <p>Designed & Developed by <a href="https://www.instagram.com/sir._.ruler?xtok=MTExZ3g0ejZzOHg5eA==" target="_blank">Vipin Gangwar</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+            reveals.forEach(reveal => observer.observe(reveal));
+        });
+    </script>
+</body>
+</html>

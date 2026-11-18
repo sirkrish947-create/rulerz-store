@@ -1,0 +1,233 @@
+{% extends 'store/base.html' %}
+{% block content %}
+
+<!-- Hero Section -->
+<div style="text-align: center; padding: 4rem 0; position: relative;">
+    <div style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); width: 100%; max-width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,107,53,0.15) 0%, transparent 70%); z-index: -1; filter: blur(50px);"></div>
+    
+    <div class="reveal">
+        <span style="display: inline-block; padding: 0.4rem 1rem; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.2); border-radius: 100px; font-size: 0.8rem; color: #ffb347; margin-bottom: 2rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;">
+            Trusted & Genuine Digital Products
+        </span>
+    </div>
+    
+    <h1 class="reveal" style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.04em; transition-delay: 0.1s;">
+        Unlock Your True <br>
+        <span style="background: linear-gradient(135deg, #ff6b35, #ffb347); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Creator Potential.</span>
+    </h1>
+    
+    <p class="reveal" style="color: #9a9aad; font-size: clamp(1rem, 2vw, 1.2rem); max-width: 600px; margin: 0 auto 3rem; transition-delay: 0.2s; padding: 0 1rem;">
+        Premium, no-fluff digital products to help you build, launch, and scale your online business.
+    </p>
+</div>
+
+<!-- Divider -->
+<div class="reveal" style="text-align: center; margin: 4rem 0 3rem;">
+    <h2 style="font-family: 'Space Grotesk'; font-size: clamp(1.8rem, 4vw, 2.5rem); letter-spacing: -0.02em;">Featured Products</h2>
+    <p style="color: #9a9aad; margin-top: 0.5rem;">Hand-picked resources to level up your game.</p>
+</div>
+
+<!-- Product Cards Grid (Auto Responsive) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; perspective: 1000px;">
+    {% for ebook in ebooks %}
+    <div class="reveal" style="transition-delay: {{ forloop.counter0 }}00ms;">
+        <div class="tilt-card" style="background: rgba(18, 18, 26, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 2rem; position: relative; transform-style: preserve-3d; transition: transform 0.2s ease, border-color 0.3s; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); height: 100%; display: flex; flex-direction: column;">
+            <div class="glare" style="position: absolute; inset: 0; border-radius: 24px; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1), transparent 60%); opacity: 0; transition: opacity 0.3s; pointer-events: none;"></div>
+            <div style="transform: translateZ(40px); flex: 1; display: flex; flex-direction: column;">
+                <div style="height: 200px; background: linear-gradient(135deg, #1a1a2e, #0f3460); border-radius: 16px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
+                    <span style="font-size: 4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));">📘</span>
+                </div>
+                <h3 style="font-family: 'Space Grotesk'; font-size: 1.4rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">{{ ebook.title }}</h3>
+                <p style="color: #9a9aad; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; flex: 1;">{{ ebook.description|truncatewords:15 }}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                    <div style="font-size: 1.6rem; font-weight: 700; color: #ffb347; font-family: 'Space Grotesk';">₹{{ ebook.price }}</div>
+                    <a href="{% url 'checkout' ebook.slug %}" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Buy Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="reveal" style="grid-column: 1/-1; text-align: center; padding: 4rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px dashed rgba(255,255,255,0.1);">
+        <p style="color: #9a9aad; font-size: 1.1rem;">Abhi koi ebook nahi hai. Admin panel se add karo!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Testimonials Section -->
+ <!-- Free Notes Section -->
+<div class="reveal" style="margin-top: 6rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <span style="display: inline-block; padding: 0.4rem 1rem; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 100px; font-size: 0.8rem; color: #22c55e; margin-bottom: 1rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;">Free Resources 🎁</span>
+        <h2 style="font-family: 'Space Grotesk'; font-size: clamp(1.8rem, 4vw, 2.5rem); letter-spacing: -0.02em;">Free Diploma Notes</h2>
+        <p style="color: #9a9aad; margin-top: 0.5rem;">High-quality notes for students. Download for free, no signup required.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        {% for note in notes|slice:":3" %} <!-- Sirf top 3 notes dikhayenge home page pe -->
+        <div style="background: rgba(18,18,26,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 1.5rem; transition: 0.3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                <span style="background: rgba(34,197,94,0.1); color: #22c55e; padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.7rem; font-weight: 600;">{{ note.subject }}</span>
+                <span style="font-size: 1.2rem;">📄</span>
+            </div>
+            <h3 style="font-family: 'Space Grotesk'; font-size: 1.1rem; margin-bottom: 0.5rem; color: #fff;">{{ note.title }}</h3>
+            <a href="{% url 'download_note' note.id %}" class="btn" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.6rem; margin-top: 1rem; font-size: 0.9rem;">
+                ⬇️ Download Free
+            </a>
+        </div>
+        {% empty %}
+        <p style="color: #9a9aad; text-align: center; grid-column: 1/-1;">Notes jald hi aayenge!</p>
+        {% endfor %}
+    </div>
+    
+    <!-- View All Button (Agar 3 se zyada notes hain) -->
+    {% if notes|length > 3 %}
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'free_notes' %}" class="btn btn-outline" style="padding: 0.6rem 2rem; font-size: 0.9rem;">View All Notes →</a>
+    </div>
+    {% endif %}      
+</div>
+<!-- Survival Packs Section -->
+<div class="reveal" style="margin-top: 6rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <span style="display: inline-block; padding: 0.4rem 1rem; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); border-radius: 100px; font-size: 0.8rem; color: #ffb347; margin-bottom: 1rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;">Exam Special 🔥</span>
+        <h2 style="font-family: 'Space Grotesk'; font-size: clamp(1.8rem, 4vw, 2.5rem);">Survival Packs</h2>
+        <p style="color: #9a9aad; margin-top: 0.5rem;">Pass your exams with our Most Expected Questions & Notes.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        {% for pack in packs %}
+        <div style="background: rgba(18,18,26,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 2rem; transition: 0.3s;" onmouseover="this.style.borderColor='rgba(255,107,53,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">📚</div>
+            <h3 style="font-family: 'Space Grotesk'; font-size: 1.3rem; margin-bottom: 0.5rem; color: #fff;">{{ pack.title }}</h3>
+            <p style="color: #9a9aad; font-size: 0.9rem; margin-bottom: 1.5rem;">{{ pack.description|truncatewords:15 }}</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: #ffb347; font-family: 'Space Grotesk';">₹{{ pack.price }}</div>
+                <a href="{% url 'pack_checkout' pack.id %}" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Buy Pack</a>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: #9a9aad; text-align: center; grid-column: 1/-1;">Packs coming soon!</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Author / Developer Section -->
+<div class="reveal" style="margin-top: 6rem; background: linear-gradient(135deg, rgba(255,107,53,0.05), rgba(0,0,0,0)); border: 1px solid rgba(255,107,53,0.1); border-radius: 24px; padding: 3rem 2rem; display: flex; align-items: center; gap: 3rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 200px; display: flex; justify-content: center;">
+        <div style="width: 100px; height: 100px; border-radius: 50%; background: #12121a; border: 2px solid #ff6b35; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: 0 0 30px rgba(255,107,53,0.3);">
+            👨‍💻
+        </div>
+    </div>
+    
+    <div style="flex: 3; min-width: 280px; text-align: left;">
+        <h2 style="font-family: 'Space Grotesk'; font-size: clamp(1.5rem, 3vw, 2rem); margin-bottom: 1rem;">Meet the Creator</h2>
+        <p style="color: #9a9aad; font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem;">
+            Hi, I'm <strong>Vipin Gangwar</strong>. I build digital products and help creators scale. My goal is to simplify the complex process of building and selling online. Every product here is crafted with real-world experience and zero fluff.
+        </p>
+        <a href="https://www.instagram.com/sir._.ruler?xtok=MTExZ3g0ejZzOHg5eA==" class="btn btn-outline" style="padding: 0.6rem 1.5rem;">Follow Me on Instagram</a>
+    </div>
+</div>
+<!-- Reviews Section -->
+<div class="reveal" style="margin-top: 6rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-family: 'Space Grotesk'; font-size: clamp(1.8rem, 4vw, 2.5rem); letter-spacing: -0.02em;">What Our Users Say</h2>
+        <p style="color: #9a9aad; margin-top: 0.5rem;">Real feedback from real creators.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
+        {% for review in reviews %}
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 2rem; border-radius: 20px;">
+            <div style="color: #ffb347; font-size: 1.2rem; margin-bottom: 1rem;">
+                {% for i in "12345"|make_list %}
+                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                {% endfor %}
+            </div>
+            <p style="color: #d1d1e0; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;">"{{ review.feedback }}"</p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #ff6b35; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                    {{ review.user.username|first|upper }}
+                </div>
+                <div>
+                    <h4 style="font-size: 0.95rem;">{{ review.user.username }}</h4>
+                    <p style="color: #9a9aad; font-size: 0.8rem;">Verified User</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: #9a9aad; text-align: center; grid-column: 1/-1;">Be the first to leave a review!</p>
+        {% endfor %}
+    </div>
+
+    <!-- Review Form -->
+    <div style="background: rgba(18,18,26,0.7); border: 1px solid rgba(255,255,255,0.1); padding: 3rem; border-radius: 24px; max-width: 600px; margin: 0 auto; text-align: center;">
+        <h3 style="font-family: 'Space Grotesk'; font-size: 1.5rem; margin-bottom: 1rem;">Loved our services?</h3>
+        <p style="color: #9a9aad; margin-bottom: 2rem;">If you like our services, give your positive opinion and feedback to help us improve.</p>
+        
+        {% if user.is_authenticated %}
+            <form method="POST" style="text-align: left;">
+                {% csrf_token %}
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; color: #9a9aad; margin-bottom: 0.5rem; font-size: 0.9rem;">Rating</label>
+                    {{ form.rating }}
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; color: #9a9aad; margin-bottom: 0.5rem; font-size: 0.9rem;">Your Feedback</label>
+                    {{ form.feedback }}
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">Submit Review</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-primary" style="padding: 1rem 2rem;">Login to Write a Review</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="reveal" style="margin-top: 6rem; margin-bottom: 4rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-family: 'Space Grotesk'; font-size: clamp(1.8rem, 4vw, 2.5rem);">Frequently Asked Questions</h2>
+    </div>
+    <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1.5rem 0;">
+        <h4 style="font-family: 'Space Grotesk'; font-size: 1.1rem; margin-bottom: 0.5rem; color: #fff;">How will I receive the eBook?</h4>
+        <p style="color: #9a9aad; font-size: 0.95rem;">Immediately after payment, you will get a download link on the screen and in your email. You can also access it from your Dashboard anytime.</p>
+    </div>
+    <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1.5rem 0;">
+        <h4 style="font-family: 'Space Grotesk'; font-size: 1.1rem; margin-bottom: 0.5rem; color: #fff;">Is my payment secure?</h4>
+        <p style="color: #9a9aad; font-size: 0.95rem;">Yes! All payments are processed securely through Razorpay. We do not store your card details.</p>
+    </div>
+    <div style="padding: 1.5rem 0;">
+        <h4 style="font-family: 'Space Grotesk'; font-size: 1.1rem; margin-bottom: 0.5rem; color: #fff;">Do you offer refunds?</h4>
+        <p style="color: #9a9aad; font-size: 0.95rem;">Since these are digital products, all sales are final. However, if you face any technical issues, feel free to contact us.</p>
+    </div>
+</div>
+
+<!-- Javascript for 3D Tilt Effect -->
+<script>
+    const cards = document.querySelectorAll('.tilt-card');
+    cards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -10;
+            const rotateY = ((x - centerX) / centerX) * 10;
+            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            card.style.borderColor = 'rgba(255, 107, 53, 0.3)';
+            const glare = card.querySelector('.glare');
+            if(glare) {
+                glare.style.opacity = '1';
+                glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.15), transparent 50%)`;
+            }
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = `rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+            card.style.borderColor = 'rgba(255,255,255,0.08)';
+            const glare = card.querySelector('.glare');
+            if(glare) glare.style.opacity = '0';
+        });
+    });
+</script>
+
+{% endblock %}

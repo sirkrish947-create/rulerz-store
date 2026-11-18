@@ -1,0 +1,48 @@
+{% extends 'store/base.html' %}
+{% block content %}
+<div class="reveal active" style="padding: 3rem 0;">
+    <h1 style="font-family: 'Space Grotesk'; font-size: 3rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">My Library</h1>
+    <p style="color: #9a9aad; margin-bottom: 3rem;">Tere saare purchased ebooks yahan hain.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        {% for order in orders %}
+        <div class="tilt-card" style="background: rgba(18,18,26,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; transform-style: preserve-3d;">
+            <div style="transform: translateZ(30px);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📘</div>
+                <h3 style="font-family: 'Space Grotesk'; font-size: 1.3rem; margin-bottom: 0.5rem;">{{ order.ebook.title }}</h3>
+                <p style="color: #9a9aad; font-size: 0.9rem; margin-bottom: 1.5rem;">Purchased on: {{ order.paid_at|date:"d M, Y" }}</p>
+                
+                <a href="{% url 'download_ebook' order.download_token %}" class="btn btn-primary" style="width: 100%; display: flex; justify-content: center; gap: 10px;">
+                    ⬇️ Download PDF
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px dashed rgba(255,255,255,0.1);">
+            <p style="color: #9a9aad; font-size: 1.1rem; margin-bottom: 1.5rem;">Bhai, tune abhi tak kuch nahi kharida.</p>
+            <a href="{% url 'home' %}" class="btn btn-primary">Browse eBooks</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // 3D Tilt Effect
+    const cards = document.querySelectorAll('.tilt-card');
+    cards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -10;
+            const rotateY = ((x - centerX) / centerX) * 10;
+            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = `rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+        });
+    });
+</script>
+{% endblock %}

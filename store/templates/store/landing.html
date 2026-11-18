@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rulerz-Digital Products</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #050505; color: #f5f5fa; font-family: 'Inter', sans-serif; overflow-x: hidden;
+            background-image: linear-gradient(rgba(255, 107, 53, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 107, 53, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px; background-position: center;
+        }
+        a { text-decoration: none; color: inherit; }
+        
+        /* Navbar */
+        nav { padding: 2rem 5vw; display: flex; justify-content: space-between; align-items: center; position: absolute; top: 0; width: 100%; z-index: 10; }
+        .logo { font-family: 'Space Grotesk'; font-size: 2rem; font-weight: 700; letter-spacing: -0.05em; }
+        .logo span { color: #ff6b35; text-shadow: 0 0 20px rgba(255,107,53,0.6); }
+        
+        /* Hero Section */
+        .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 5vw; position: relative; perspective: 1000px; }
+        
+        /* Glowing Orbs */
+        .orb-1 { position: absolute; top: 20%; left: 20%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,107,53,0.2), transparent 70%); filter: blur(60px); z-index: -1; animation: float 8s infinite alternate; }
+        .orb-2 { position: absolute; bottom: 20%; right: 20%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,212,255,0.15), transparent 70%); filter: blur(60px); z-index: -1; animation: float 10s infinite alternate-reverse; }
+
+        .badge { display: inline-block; padding: 0.4rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; font-size: 0.85rem; color: #d1d1e0; margin-bottom: 2rem; backdrop-filter: blur(10px); letter-spacing: 0.1em; text-transform: uppercase; }
+        
+        .hero h1 { font-family: 'Space Grotesk'; font-size: clamp(4rem, 10vw, 8rem); font-weight: 700; line-height: 0.9; letter-spacing: -0.05em; margin-bottom: 1.5rem; }
+        .hero h1 span { background: linear-gradient(135deg, #ff6b35, #ffb347); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display: block; }
+        
+        .hero p { color: #9a9aad; font-size: 1.2rem; max-width: 600px; margin-bottom: 3rem; line-height: 1.6; }
+
+        /* Enter Button */
+        .btn-enter { 
+            padding: 1.2rem 3rem; font-size: 1.1rem; border-radius: 100px; font-weight: 700; font-family: 'Space Grotesk'; 
+            background: #fff; color: #000; border: none; cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 20px 40px -10px rgba(255,255,255,0.2); position: relative; overflow: hidden;
+        }
+        .btn-enter:hover { transform: translateY(-5px) scale(1.05); background: #ff6b35; color: #fff; box-shadow: 0 30px 60px -10px rgba(255,107,53,0.5); }
+        
+        /* Info Sections (Specialties & Goals) */
+        .info-section { padding: 8rem 5vw; max-width: 1200px; margin: 0 auto; }
+        .section-title { font-family: 'Space Grotesk'; font-size: 2.5rem; margin-bottom: 3rem; text-align: center; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .card { background: rgba(18,18,26,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 2.5rem; transition: 0.3s; backdrop-filter: blur(10px); }
+        .card:hover { border-color: rgba(255,107,53,0.4); transform: translateY(-5px); }
+        .card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .card h3 { font-family: 'Space Grotesk'; font-size: 1.3rem; margin-bottom: 1rem; color: #fff; }
+        .card p { color: #9a9aad; font-size: 0.95rem; line-height: 1.6; }
+
+        /* Animations */
+        @keyframes float { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        
+        /* Footer */
+        footer { text-align: center; padding: 3rem; border-top: 1px solid rgba(255,255,255,0.05); color: #9a9aad; font-size: 0.9rem; }
+
+        /* 📱 MOBILE FIXES */
+        @media (max-width: 768px) {
+            nav { padding: 1.5rem 5vw; }
+            .logo { font-size: 1.5rem; }
+            .hero h1 { font-size: 3.5rem; }
+            .hero p { font-size: 1rem; padding: 0 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .info-section { padding: 4rem 5vw; }
+            .section-title { font-size: 2rem; }
+            .btn-enter { padding: 1rem 2rem; font-size: 1rem; }
+            
+            /* Badge ko logo se door rakhne ke liye */
+            .badge {
+                margin-top: 5rem;
+                font-size: 0.65rem;
+                padding: 0.3rem 0.8rem;
+                max-width: 90%;
+                white-space: normal;
+                line-height: 1.4;
+            }
+            .hero {
+                padding-top: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="logo">Rulerz<span>.</span>store</a>
+    </nav>
+
+    <section class="hero">
+        <div class="orb-1"></div>
+        <div class="orb-2"></div>
+        
+        <div class="badge reveal">Welcome to the Ruler's official Store</div>
+        <h1 class="reveal" style="transition-delay: 0.1s;">Rule Your <span>Potential.</span></h1>
+        <p class="reveal" style="transition-delay: 0.2s;">Rulerz is a premium digital ecosystem built to empower creators, developers, and entrepreneurs with high-quality resources, tools, and knowledge.</p>
+        
+        <a href="{% url 'home' %}" class="btn-enter reveal" style="transition-delay: 0.3s;">
+            Enter the Store <span>→</span>
+        </a>
+    </section>
+
+    <section class="info-section">
+        <h2 class="section-title reveal">Our Specialties</h2>
+        <div class="grid">
+            <div class="card reveal" style="transition-delay: 0.1s;">
+                <div class="card-icon">💎</div>
+                <h3>Premium Digital Assets</h3>
+                <p>We craft high-quality eBooks, UI kits, and templates that are built with industry standards.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.2s;">
+                <div class="card-icon">🚀</div>
+                <h3>Creator-First Approach</h3>
+                <p>Every product is designed keeping the creator in mind, zero fluff, and 100% actionable value.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.3s;">
+                <div class="card-icon">🔒</div>
+                <h3>Secure Ecosystem</h3>
+                <p>Fully secure payment gateways and instant, protected delivery of your purchased products.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <h2 class="section-title reveal">Our Mission & Goals</h2>
+        <div class="grid">
+            <div class="card reveal" style="transition-delay: 0.1s;">
+                <h3>🎯 Empower 10k+ Creators</h3>
+                <p>To provide the exact tools and knowledge required to help creators quit their 9-5 jobs.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.2s;">
+                <h3>🌍 Build a Community</h3>
+                <p>Creating a global network of like-minded individuals who build, launch, and scale together.</p>
+            </div>
+            <div class="card reveal" style="transition-delay: 0.3s;">
+                <h3>⚡ Quality Over Quantity</h3>
+                <p>We don't flood the market. We release only the most tested, high-impact digital products.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-bottom">
+            <p>© 2026 Rulerz.store All rights reserved.</p>
+            <p>Designed & Developed by <a href="https://www.instagram.com/sir._.ruler?xtok=MTExZ3g0ejZzOHg5eA==" target="_blank">Vipin Gangwar</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            reveals.forEach(reveal => observer.observe(reveal));
+        });
+    </script>
+</body>
+</html>

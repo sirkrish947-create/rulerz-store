@@ -1,0 +1,71 @@
+{% extends 'store/base.html' %}
+{% block content %}
+<div class="reveal active" style="padding: 3rem 0;">
+    <!-- Header Section -->
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <span style="display: inline-block; padding: 0.4rem 1rem; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); border-radius: 100px; font-size: 0.8rem; color: #22c55e; margin-bottom: 1rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;">100% Free Resources</span>
+        <h1 style="font-family: 'Space Grotesk'; font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; letter-spacing: -0.03em;">Diploma Notes Library</h1>
+        <p style="color: #9a9aad; font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Download high-quality, hand-written notes for free. No signup required. Just click and download.</p>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="reveal" style="background: rgba(18,18,26,0.7); border: 1px solid rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 20px; margin-bottom: 3rem; backdrop-filter: blur(10px);">
+        <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: center;">
+            
+            <!-- Branch Select -->
+            <div style="flex: 1; min-width: 200px;">
+                <select name="branch" style="width: 100%; padding: 0.8rem; background: #0a0a0f; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Inter';">
+                    <option value="">All Branches</option>
+                    {% for code, name in branches %}
+                        <option value="{{ code }}" {% if selected_branch == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Semester Select -->
+            <div style="flex: 1; min-width: 200px;">
+                <select name="semester" style="width: 100%; padding: 0.8rem; background: #0a0a0f; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Inter';">
+                    <option value="">All Semesters</option>
+                    {% for code, name in semesters %}
+                        <option value="{{ code }}" {% if selected_semester == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filter Button -->
+            <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem;">Filter</button>
+            
+            <!-- Reset Button -->
+            <a href="{% url 'free_notes' %}" class="btn btn-outline" style="padding: 0.8rem 1.5rem;">Reset</a>
+        </form>
+    </div>
+
+    <!-- Notes Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        {% for note in notes %}
+        <div style="background: rgba(18,18,26,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 2rem; transition: 0.3s;" onmouseover="this.style.borderColor='rgba(34,197,94,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                <span style="background: rgba(34,197,94,0.1); color: #22c55e; padding: 0.3rem 0.8rem; border-radius: 100px; font-size: 0.8rem; font-weight: 600;">{{ note.subject }}</span>
+                <span style="font-size: 1.5rem;">📄</span>
+            </div>
+            <h3 style="font-family: 'Space Grotesk'; font-size: 1.3rem; margin-bottom: 0.5rem; color: #fff;">{{ note.title }}</h3>
+            
+            <!-- Branch & Sem Tag -->
+            <span style="background: rgba(255,107,53,0.1); color: #ff6b35; padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.7rem; font-weight: 600; display: inline-block; margin-bottom: 1rem;">
+                {{ note.branch }} - Sem {{ note.semester }}
+            </span>
+
+            <p style="color: #9a9aad; font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5;">{{ note.description|default:"Click download to access these notes." }}</p>
+            
+            <a href="{% url 'download_note' note.id %}" class="btn" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; background: #fff; color: #000; border-radius: 10px; padding: 0.8rem;">
+                ⬇️ Download Free
+            </a>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px dashed rgba(255,255,255,0.1);">
+            <p style="color: #9a9aad;">Abhi koi notes upload nahi hue hain.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

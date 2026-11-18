@@ -1,0 +1,10 @@
+Django==6.1.3
+razorpay
+python-dotenv
+Pillow
+django-allauth
+PyJWT
+whitenoise
+gunicorn
+dj-database-url
+psycopg2-binary

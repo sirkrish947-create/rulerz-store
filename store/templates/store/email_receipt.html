@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { background: #050505; padding: 30px; text-align: center; color: #fff; }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .header span { color: #ff6b35; }
+        .body { padding: 40px 30px; color: #333; line-height: 1.6; }
+        .body h2 { color: #050505; margin-top: 0; }
+        .btn { display: inline-block; background: #ff6b35; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: bold; margin-top: 20px; }
+        .footer { background: #f9f9f9; padding: 20px; text-align: center; color: #888; font-size: 12px; border-top: 1px solid #eee; }
+        .highlight { color: #ff6b35; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Rulerz<span>.store</span></h1>
+        </div>
+        <div class="body">
+            <h2>Hello {{ user.username }}! 👋</h2>
+            <p>Thank you for your purchase. Your payment was successful and your eBook is now ready for download.</p>
+            
+            <p><strong>Order Details:</strong></p>
+            <ul>
+                <li><strong>eBook:</strong> {{ order.ebook.title }}</li>
+                <li><strong>Amount Paid:</strong> ₹{{ order.amount }}</li>
+                <li><strong>Order ID:</strong> #{{ order.id }}</li>
+            </ul>
+            
+            <p>Click the button below to download your eBook:</p>
+            <center>
+                <a href="{{ download_link }}" class="btn">📥 Download eBook Now</a>
+            </center>
+            
+            <p style="margin-top: 30px;">If you have any questions, feel free to reply to this email.</p>
+            <p>Happy Learning! 🚀<br><strong>Team Rulerz</strong></p>
+        </div>
+        <div class="footer">
+            © 2026 Rulerz.store | All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
