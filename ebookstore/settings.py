@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'ebookstore.wsgi.application'
 # Database (Render pe deploy hone pe automatic PostgreSQL set ho jayega)
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite3:///' + str(BASE_DIR / 'db.sqlite3')
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')
     )
 }
 
@@ -120,6 +120,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'japshsk@gmail.com'  # <-- Yahan apna Gmail daalo
+EMAIL_HOST_USER = 'sirkrish947@gmail.com'  # <-- Yahan apna Gmail daalo
 EMAIL_HOST_PASSWORD = 'vipin@95A'  # <-- Yahan wo 16-digit App Password daalo
-DEFAULT_FROM_EMAIL = 'Rulerz.store <tumhara_email@gmail.com>'
+DEFAULT_FROM_EMAIL = 'Rulerz.store <sirkrish947@gmail.com>'
