@@ -1,104 +1,169 @@
+
 {% extends 'store/base.html' %}
 {% block content %}
-<div class="reveal active" style="max-width: 500px; margin: 4rem auto; text-align: center; perspective: 1000px;">
-    <h2 style="font-family: 'Space Grotesk'; font-size: 2.5rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Complete your purchase</h2>
-    <p style="color: #9a9aad; margin-bottom: 2.5rem;">Instant download after payment</p>
 
-    <!-- 3D Tilt Card for Order Summary -->
+<div class="reveal active" style="max-width: 500px; margin: 4rem auto; text-align: center; perspective: 1000px;">
+
+    <h2 style="font-family: 'Space Grotesk'; font-size: 2.5rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">
+        Complete your purchase
+    </h2>
+
+    <p style="color: #9a9aad; margin-bottom: 2.5rem;">
+        Instant download after payment
+    </p>
+
+    <!-- Order Summary -->
     <div class="tilt-card" style="background: rgba(18, 18, 26, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 2rem; margin-bottom: 2rem; position: relative; transform-style: preserve-3d;">
+
         <div style="position: absolute; inset: 0; border-radius: 24px; background: radial-gradient(circle at 50% 50%, rgba(255,107,53,0.1), transparent 60%); pointer-events: none;"></div>
-        
+
         <div style="transform: translateZ(30px);">
-            <div style="display: flex; justify-content: space-between; font-size: 1rem; margin-bottom: 1rem; color: #d1d1e0;">
-                <span>{{ ebook.title }}</span>
-                <span>₹{{ ebook.price }}</span>
+
+            <div style="display: flex; justify-content: space-between; gap: 15px; font-size: 1rem; margin-bottom: 1rem; color: #d1d1e0;">
+                <span>{{ product.title }}</span>
+                <span>₹{{ order.amount }}</span>
             </div>
+
             <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); font-family: 'Space Grotesk'; font-weight: 700; font-size: 1.3rem;">
                 <span>Total</span>
-                <span style="color: #ffb347;">₹{{ ebook.price }}</span>
+                <span style="color: #ffb347;">₹{{ order.amount }}</span>
             </div>
+
         </div>
     </div>
 
-    <!-- Pay Button -->
-    <button id="rzp-button1" class="btn btn-primary" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 20px 40px -10px rgba(255,107,53,0.5);">
-        💳 Pay ₹{{ ebook.price }} Securely
+    <!-- Payment Button -->
+    <button
+        id="rzp-button1"
+        class="btn btn-primary"
+        type="button"
+        style="width: 100%; padding: 1.2rem; font-size: 1.1rem; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 20px 40px -10px rgba(255,107,53,0.5);">
+
+        💳 Pay ₹{{ order.amount }} Securely
+
     </button>
-    <p style="color: #9a9aad; font-size: 0.8rem; margin-top: 1.5rem;">100% Secure Payment via Razorpay</p>
+
+    <p style="color: #9a9aad; font-size: 0.8rem; margin-top: 1.5rem;">
+        100% Secure Payment via Razorpay
+    </p>
+
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+{{ product.title|json_script:"product-title" }}
+
 <script>
-    // Razorpay Options
-    var options = {
-        "key": "{{ razorpay_key_id }}", 
-        "amount": "{{ order.amount|floatformat:0 }}00", // Amount in paise (e.g., 499 * 100 = 49900)
-        "currency": "INR",
-        "name": "eBook Store",
-        "description": "Purchase: {{ ebook.title }}",
-        "order_id": "{{ order.razorpay_order_id }}",
-        "handler": function (response){
-            // Payment success hone ke baad ye form verify view pe jayega
-            var form = document.createElement("form");
+(function () {
+
+    const options = {
+        key: "{{ razorpay_key_id|escapejs }}",
+
+        // Exact amount in paise, supplied by Django.
+        amount: "{{ amount_paise }}",
+
+        currency: "INR",
+
+        name: "Rulerz.store",
+
+        description: "Purchase: " + JSON.parse(
+            document.getElementById("product-title").textContent
+        ),
+
+        order_id: "{{ order.razorpay_order_id|escapejs }}",
+
+        handler: function (response) {
+
+            const form = document.createElement("form");
+
             form.method = "POST";
             form.action = "{% url 'payment_verify' %}";
-            
-            var csrfToken = document.createElement("input");
+
+            const csrfToken = document.createElement("input");
             csrfToken.type = "hidden";
             csrfToken.name = "csrfmiddlewaretoken";
             csrfToken.value = "{{ csrf_token }}";
-            
-            var paymentId = document.createElement("input");
+
+            const paymentId = document.createElement("input");
             paymentId.type = "hidden";
             paymentId.name = "razorpay_payment_id";
             paymentId.value = response.razorpay_payment_id;
-            
-            var orderId = document.createElement("input");
+
+            const orderId = document.createElement("input");
             orderId.type = "hidden";
             orderId.name = "razorpay_order_id";
             orderId.value = response.razorpay_order_id;
-            
-            var signature = document.createElement("input");
+
+            const signature = document.createElement("input");
             signature.type = "hidden";
             signature.name = "razorpay_signature";
             signature.value = response.razorpay_signature;
-            
+
             form.appendChild(csrfToken);
             form.appendChild(paymentId);
             form.appendChild(orderId);
             form.appendChild(signature);
-            
+
             document.body.appendChild(form);
             form.submit();
         },
-        "theme": {
-            "color": "#ff6b35"
+
+        theme: {
+            color: "#ff6b35"
+        },
+
+        modal: {
+            ondismiss: function () {
+                console.log("Razorpay checkout closed.");
+            }
         }
     };
-    
-    var rzp1 = new Razorpay(options);
-    document.getElementById('rzp-button1').onclick = function(e){
-        rzp1.open();
-        e.preventDefault();
-    }
 
-    // 3D Tilt Effect for Checkout Card
-    const cards = document.querySelectorAll('.tilt-card');
+    const paymentButton = document.getElementById("rzp-button1");
+
+    paymentButton.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        const razorpayCheckout = new Razorpay(options);
+
+        razorpayCheckout.on("payment.failed", function (response) {
+            alert("Payment failed. Please try again.");
+            console.error("Payment failed:", response.error.code);
+        });
+
+        razorpayCheckout.open();
+    });
+
+    // 3D Tilt Effect
+    const cards = document.querySelectorAll(".tilt-card");
+
     cards.forEach(card => {
-        card.addEventListener('mousemove', e => {
+
+        card.addEventListener("mousemove", event => {
+
             const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
+
             const rotateX = ((y - centerY) / centerY) * -10;
             const rotateY = ((x - centerX) / centerX) * 10;
-            
-            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+
+            card.style.transform =
+                `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
         });
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = `rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+
+        card.addEventListener("mouseleave", () => {
+            card.style.transform =
+                "rotateX(0) rotateY(0) scale3d(1, 1, 1)";
         });
+
     });
+
+})();
 </script>
+
 {% endblock %}

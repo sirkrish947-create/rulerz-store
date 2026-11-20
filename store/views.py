@@ -1,143 +1,311 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from django.conf import settings
-from .models import Ebook, Order
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from .models import SurvivalPack
+
+import logging
+
 import razorpay
-import hmac
-import hashlib
+
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.core.mail import send_mail
+from django.db import transaction
+from django.http import Http404, HttpResponse, FileResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from django.utils.html import strip_tags
+from django.views import generic
+from django.views.decorators.http import require_POST
 
 from .forms import ReviewForm
-from .models import Review
+from .models import Ebook, Order, Note, Review, SurvivalPack
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_razorpay_client():
+    return razorpay.Client(
+        auth=(
+            settings.RAZORPAY_KEY_ID,
+            settings.RAZORPAY_KEY_SECRET
+        )
+    )
+
+
+def create_product_checkout(request, product, is_pack=False):
+    """Create a Razorpay order for an ebook or survival pack."""
+
+    if Order.objects.filter(
+        user=request.user,
+        ebook=product if not is_pack else None,
+        survival_pack=product if is_pack else None,
+        status='paid'
+    ).exists():
+        return HttpResponse(
+            "You have already purchased this product.",
+            status=400
+        )
+
+    amount_paise = int(product.price * 100)
+
+    if amount_paise <= 0:
+        return HttpResponse("Invalid product price.", status=400)
+
+    client = get_razorpay_client()
+
+    payment_order = client.order.create({
+        'amount': amount_paise,
+        'currency': 'INR',
+        'payment_capture': 1
+    })
+
+    order_data = {
+        'user': request.user,
+        'amount': product.price,
+        'razorpay_order_id': payment_order['id'],
+    }
+
+    if is_pack:
+        order_data['survival_pack'] = product
+    else:
+        order_data['ebook'] = product
+
+    order = Order.objects.create(**order_data)
+
+    return render(request, 'store/checkout.html', {
+        'ebook': product,
+        'product': product,
+        'order': order,
+        'amount_paise': amount_paise,
+        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
+        'is_pack': is_pack,
+    })
+
+
+def landing_page(request):
+    return render(request, 'store/landing.html')
+
 
 def home(request):
     ebooks = Ebook.objects.filter(is_published=True)
     notes = Note.objects.all().order_by('-created_at')
-    packs = SurvivalPack.objects.filter(is_published=True) # Naya
+    packs = SurvivalPack.objects.filter(is_published=True)
     reviews = Review.objects.all().order_by('-created_at')
-    
+
     if request.method == 'POST':
-        if request.user.is_authenticated:
-            form = ReviewForm(request.POST)
-            if form.is_valid():
-                review = form.save(commit=False)
-                review.user = request.user
-                review.save()
-                return redirect('home')
-        else:
+        if not request.user.is_authenticated:
             return redirect('login')
+
+        form = ReviewForm(request.POST)
+
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.save()
+            return redirect('home')
     else:
         form = ReviewForm()
 
     return render(request, 'store/home.html', {
-        'ebooks': ebooks, 
-        'notes': notes, 
-        'packs': packs, # Naya
-        'reviews': reviews, 
+        'ebooks': ebooks,
+        'notes': notes,
+        'packs': packs,
+        'reviews': reviews,
         'form': form
     })
 
+
 @login_required
 def checkout(request, slug):
-    ebook = get_object_or_404(Ebook, slug=slug)
-    
-    # Check if already bought
-    if Order.objects.filter(user=request.user, ebook=ebook, status='paid').exists():
-        return HttpResponse("Bhai, tu ye ebook pehle hi kharid chuka hai!")
-
-    # Razorpay Order Create karo
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-    order_amount = int(ebook.price * 100)
-    order_currency = 'INR'
-    payment_order = client.order.create(dict(amount=order_amount, currency=order_currency, payment_capture='1'))
-    
-    # Database mein save karo
-    order = Order.objects.create(
-        user=request.user, 
-        ebook=ebook, 
-        amount=ebook.price,
-        razorpay_order_id=payment_order['id']
+    ebook = get_object_or_404(
+        Ebook,
+        slug=slug,
+        is_published=True
     )
-    
-    context = {
-        'ebook': ebook,
-        'order': order,
-        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
-    }
-    return render(request, 'store/checkout.html', context)
+
+    return create_product_checkout(request, ebook)
+
+
+@login_required
+def pack_checkout(request, pack_id):
+    pack = get_object_or_404(
+        SurvivalPack,
+        id=pack_id,
+        is_published=True
+    )
+
+    return create_product_checkout(request, pack, is_pack=True)
+
 
 @login_required
 def dashboard(request):
-    # Sirf 'paid' status wali orders dikhao
-    orders = Order.objects.filter(user=request.user, status='paid').order_by('-created_at')
-    return render(request, 'store/dashboard.html', {'orders': orders})
-from django.contrib.auth.forms import UserCreationForm
-from django.urls import reverse_lazy
-from django.views import generic
+    orders = Order.objects.filter(
+        user=request.user,
+        status='paid'
+    ).order_by('-created_at')
+
+    return render(request, 'store/dashboard.html', {
+        'orders': orders
+    })
+
 
 class SignUpView(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'store/signup.html'
-from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
-import razorpay
-import hmac
-import hashlib
 
-@csrf_exempt
+
 @login_required
+@require_POST
 def payment_verify(request):
-    if request.method == "POST":
-        razorpay_payment_id = request.POST.get('razorpay_payment_id')
-        razorpay_order_id = request.POST.get('razorpay_order_id')
-        razorpay_signature = request.POST.get('razorpay_signature')
-        
-        try:
-            order = Order.objects.get(razorpay_order_id=razorpay_order_id, user=request.user)
-            
-            # Razorpay Signature Verify Logic
-            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-            params_dict = {
-                'razorpay_order_id': razorpay_order_id,
-                'razorpay_payment_id': razorpay_payment_id,
-                'razorpay_signature': razorpay_signature
-            }
-            client.utility.verify_payment_signature(params_dict)
-            order.mark_paid(razorpay_payment_id, razorpay_signature)
-            
-            # 🚀 YAHAN SE EMAIL BHEJNA SHURU HOTA HAI
-            download_link = f"http://127.0.0.1:8000/download/{order.download_token}/"
-            
-            # HTML email template render karo
-            html_message = render_to_string('store/email_receipt.html', {
-                'user': request.user,
-                'order': order,
-                'download_link': download_link
-            })
-            plain_message = strip_tags(html_message)
-            
-            send_mail(
-                subject=f"Your eBook is Ready! - {order.ebook.title}",
-                message=plain_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[request.user.email],
-                html_message=html_message,
-                fail_silently=False,
+    payment_id = request.POST.get('razorpay_payment_id', '').strip()
+    razorpay_order_id = request.POST.get('razorpay_order_id', '').strip()
+    signature = request.POST.get('razorpay_signature', '').strip()
+
+    if not payment_id or not razorpay_order_id or not signature:
+        return HttpResponse(
+            "Payment verification details are missing.",
+            status=400
+        )
+
+    try:
+        order = Order.objects.get(
+            razorpay_order_id=razorpay_order_id,
+            user=request.user
+        )
+
+        client = get_razorpay_client()
+
+        # Verify Razorpay payment signature.
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        })
+
+        # Fetch payment directly from Razorpay.
+        payment = client.payment.fetch(payment_id)
+
+        expected_amount = int(order.amount * 100)
+
+        # Verify payment belongs to this order and has correct amount.
+        if payment.get('order_id') != order.razorpay_order_id:
+            return HttpResponse(
+                "Payment order mismatch.",
+                status=400
             )
-            # 🚀 EMAIL CODE KHATAM
-            
-            return render(request, 'store/success.html', {'order': order})
-            
-        except Exception as e:
-            return HttpResponse(f"Payment Failed or Verification Error: {str(e)}")
-            
-    return HttpResponse("Invalid Request")
-from django.http import FileResponse, Http404
+
+        if payment.get('amount') != expected_amount:
+            return HttpResponse(
+                "Payment amount mismatch.",
+                status=400
+            )
+
+        if payment.get('currency') != 'INR':
+            return HttpResponse(
+                "Payment currency mismatch.",
+                status=400
+            )
+
+        if payment.get('status') != 'captured':
+            return HttpResponse(
+                "Payment is not captured yet. Please contact support.",
+                status=400
+            )
+
+        # Lock the order to prevent duplicate processing.
+        with transaction.atomic():
+            locked_order = Order.objects.select_for_update().get(
+                pk=order.pk,
+                user=request.user
+            )
+
+            if locked_order.status == 'paid':
+                if locked_order.razorpay_payment_id != payment_id:
+                    return HttpResponse(
+                        "This order has already been paid.",
+                        status=400
+                    )
+
+                newly_paid = False
+
+            elif locked_order.status == 'pending':
+                newly_paid = locked_order.mark_paid(
+                    payment_id,
+                    signature
+                )
+
+            else:
+                return HttpResponse(
+                    "This order cannot be processed.",
+                    status=400
+                )
+
+        # Send receipt only on the first successful payment transition.
+        if newly_paid and request.user.email:
+            try:
+                download_link = request.build_absolute_uri(
+                    reverse(
+                        'download_ebook',
+                        kwargs={'token': locked_order.download_token}
+                    )
+                )
+
+                html_message = render_to_string(
+                    'store/email_receipt.html',
+                    {
+                        'user': request.user,
+                        'order': locked_order,
+                        'download_link': download_link
+                    }
+                )
+
+                send_mail(
+                    subject=f"Your Purchase is Ready! - {locked_order.product_title}",
+                    message=strip_tags(html_message),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[request.user.email],
+                    html_message=html_message,
+                    fail_silently=False
+                )
+
+            except Exception:
+                logger.exception(
+                    "Receipt email failed for order %s",
+                    locked_order.pk
+                )
+
+        return render(request, 'store/success.html', {
+            'order': locked_order
+        })
+
+    except Order.DoesNotExist:
+        return HttpResponse(
+            "Order not found.",
+            status=404
+        )
+
+    except razorpay.errors.SignatureVerificationError:
+        logger.warning(
+            "Razorpay signature verification failed for user %s",
+            request.user.pk
+        )
+        return HttpResponse(
+            "Payment verification failed. Please contact support.",
+            status=400
+        )
+
+    except Exception:
+        logger.exception(
+            "Payment verification error for user %s",
+            request.user.pk
+        )
+        return HttpResponse(
+            "We could not verify your payment. Please contact support.",
+            status=500
+        )
+
 
 @login_required
 def download_ebook(request, token):
@@ -148,46 +316,57 @@ def download_ebook(request, token):
     )
 
     if order.status != 'paid':
-        raise Http404("Payment not completed!")
+        raise Http404("Payment not completed.")
 
-    if not order.ebook or not order.ebook.pdf_file:
-        raise Http404("PDF file missing!")
+    if order.ebook_id:
+        product = order.ebook
+    elif order.survival_pack_id:
+        product = order.survival_pack
+    else:
+        raise Http404("Product not found.")
+
+    if not product.pdf_file:
+        raise Http404("PDF file missing.")
 
     try:
-        file = order.ebook.pdf_file.open('rb')
+        file = product.pdf_file.open('rb')
 
         return FileResponse(
             file,
             as_attachment=True,
-            filename=f"{order.ebook.title}.pdf",
+            filename=f"{product.title}.pdf",
             content_type="application/pdf"
         )
+
     except Exception:
-        raise Http404("PDF file could not be accessed")
+        logger.exception(
+            "Download failed for order %s",
+            order.pk
+        )
+        raise Http404("PDF file could not be accessed.")
+
+
 def privacy_policy(request):
     return render(request, 'store/privacy.html')
+
 
 def terms(request):
     return render(request, 'store/terms.html')
 
+
 def refund_policy(request):
     return render(request, 'store/refund.html')
-def landing_page(request):
-    return render(request, 'store/landing.html')
-from .models import Note
+
 
 def free_notes(request):
     notes = Note.objects.all().order_by('-created_at')
-    
-    # URL se branch aur semester ki value uthao
+
     branch = request.GET.get('branch')
     semester = request.GET.get('semester')
-    
-    # Agar user ne branch select kiya hai, toh filter karo
+
     if branch:
         notes = notes.filter(branch=branch)
-        
-    # Agar user ne semester select kiya hai, toh filter karo
+
     if semester:
         notes = notes.filter(semester=semester)
 
@@ -198,6 +377,7 @@ def free_notes(request):
         'selected_branch': branch,
         'selected_semester': semester,
     }
+
     return render(request, 'store/notes.html', context)
 
 
@@ -205,7 +385,7 @@ def download_note(request, note_id):
     note = get_object_or_404(Note, id=note_id)
 
     if not note.pdf_file:
-        raise Http404("File missing")
+        raise Http404("File missing.")
 
     try:
         file = note.pdf_file.open('rb')
@@ -218,30 +398,8 @@ def download_note(request, note_id):
         )
 
     except Exception:
-        raise Http404("PDF file could not be accessed")
-
-@login_required
-def pack_checkout(request, pack_id):
-    pack = get_object_or_404(SurvivalPack, id=pack_id)
-    
-    if Order.objects.filter(user=request.user, ebook=pack, status='paid').exists():
-        return HttpResponse("Bhai, tu ye pack pehle hi kharid chuka hai!")
-
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-    order_amount = int(pack.price * 100)
-    payment_order = client.order.create(dict(amount=order_amount, currency='INR', payment_capture='1'))
-    
-    order = Order.objects.create(
-        user=request.user, 
-        ebook=pack, # Hum pack ko ebook ki tarah treat kar rahe hain
-        amount=pack.price,
-        razorpay_order_id=payment_order['id']
-    )
-    
-    context = {
-        'ebook': pack, 
-        'order': order,
-        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
-        'is_pack': True, # Template mein pata chalne ke liye
-    }
-    return render(request, 'store/checkout.html', context)
+        logger.exception(
+            "Free note download failed for note %s",
+            note.pk
+        )
+        raise Http404("PDF file could not be accessed.")

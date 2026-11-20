@@ -1,17 +1,54 @@
+
 {% extends 'store/base.html' %}
 {% block content %}
+
 <div class="reveal active" style="text-align: center; padding: 5rem 0;">
+
     <div style="width: 80px; height: 80px; background: rgba(34, 197, 94, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; border: 2px solid #22c55e; box-shadow: 0 0 30px rgba(34,197,94,0.4);">
+
         <span style="font-size: 2.5rem;">✅</span>
+
     </div>
-    <h1 style="font-family: 'Space Grotesk'; font-size: 3rem; margin-bottom: 1rem;">Payment Successful!</h1>
-    <p style="color: #9a9aad; font-size: 1.1rem; margin-bottom: 3rem;">Tera ebook ready hai. Abhi download kar le!</p>
-    
+
+    <h1 style="font-family: 'Space Grotesk'; font-size: 3rem; margin-bottom: 1rem;">
+        Payment Successful!
+    </h1>
+
+    <p style="color: #9a9aad; font-size: 1.1rem; margin-bottom: 3rem;">
+        Your purchase is ready. Download it now!
+    </p>
+
     <div style="background: rgba(18,18,26,0.8); padding: 2rem; border-radius: 20px; display: inline-block; border: 1px solid rgba(255,255,255,0.1);">
-        <h3 style="margin-bottom: 1rem;">{{ order.ebook.title }}</h3>
-        <a href="{% url 'download_ebook' order.download_token %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 10px; justify-content: center; font-size: 1.1rem; padding: 1rem 2rem;">
+
+        <h3 style="margin-bottom: 0.5rem;">
+            {{ order.product_title }}
+        </h3>
+
+        <p style="color: #9a9aad; margin-bottom: 1.5rem;">
+            {% if order.survival_pack_id %}
+                Survival Pack
+            {% else %}
+                eBook
+            {% endif %}
+        </p>
+
+        <a
+            href="{% url 'download_ebook' order.download_token %}"
+            class="btn btn-primary"
+            style="display: flex; align-items: center; gap: 10px; justify-content: center; font-size: 1.1rem; padding: 1rem 2rem;">
+
             ⬇️ Download PDF
+
+        </a>
+
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <a href="{% url 'dashboard' %}" style="color: #ffb347; text-decoration: none;">
+            Go to My Library →
         </a>
     </div>
+
 </div>
+
 {% endblock %}

@@ -17,38 +17,92 @@ class Ebook(models.Model):
     def __str__(self):
         return self.title
 
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('paid', 'Paid'),
         ('failed', 'Failed'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
-    ebook = models.ForeignKey(Ebook, on_delete=models.PROTECT)
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='orders'
+    )
+
+    # Ebook orders ke liye existing relationship preserve rahega.
+    # Survival Pack orders mein ebook blank rahega.
+    ebook = models.ForeignKey(
+        Ebook,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True
+    )
+
     survival_pack = models.ForeignKey(
-    'SurvivalPack',
-    on_delete=models.PROTECT,
-    null=True,
-    blank=True
-)
+        'SurvivalPack',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True
+    )
+
     amount = models.DecimalField(max_digits=8, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+
     razorpay_order_id = models.CharField(max_length=100, blank=True)
     razorpay_payment_id = models.CharField(max_length=100, blank=True)
     razorpay_signature = models.CharField(max_length=200, blank=True)
-    download_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    download_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
+    @property
+    def product_title(self):
+        if self.ebook_id:
+            return self.ebook.title
+        if self.survival_pack_id:
+            return self.survival_pack.title
+        return "Unknown Product"
+
     def __str__(self):
-        return f"#{self.id} - {self.user.username} - {self.ebook.title}"
+        return (
+            f"#{self.id} - {self.user.username} - "
+            f"{self.product_title}"
+        )
 
     def mark_paid(self, payment_id, signature):
+        # Already-paid orders must not be processed again.
+        if self.status == 'paid':
+            return False
+
+        if self.status != 'pending':
+            return False
+
         self.status = 'paid'
         self.razorpay_payment_id = payment_id
         self.razorpay_signature = signature
         self.paid_at = timezone.now()
-        self.save()
+
+        self.save(update_fields=[
+            'status',
+            'razorpay_payment_id',
+            'razorpay_signature',
+            'paid_at'
+        ])
+
+        return True
+
 class Note(models.Model):
     BRANCH_CHOICES = [
         ('CSE', 'Computer Science and Engineering'),
