@@ -23,9 +23,14 @@ class Order(models.Model):
         ('paid', 'Paid'),
         ('failed', 'Failed'),
     ]
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     ebook = models.ForeignKey(Ebook, on_delete=models.PROTECT)
+    survival_pack = models.ForeignKey(
+    'SurvivalPack',
+    on_delete=models.PROTECT,
+    null=True,
+    blank=True
+)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     razorpay_order_id = models.CharField(max_length=100, blank=True)

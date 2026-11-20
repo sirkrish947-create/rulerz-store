@@ -5,3 +5,19 @@ db.sqlite3
 media/
 staticfiles/
 .env
+# Sensitive database backups
+*.sqlite3
+*.sqlite3.backup
+*.json
+*backup*
+media-backup/
+
+# Temporary migration scripts
+ebookstore/settings_sqlite.py
+ebookstore/upload_media.py
+
+# Environment and generated files
+.env
+venv/
+__pycache__/
+staticfiles/

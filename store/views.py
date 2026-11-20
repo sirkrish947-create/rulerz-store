@@ -141,25 +141,29 @@ from django.http import FileResponse, Http404
 
 @login_required
 def download_ebook(request, token):
-    # Order dhundho us token se
-    order = get_object_or_404(Order, download_token=token, user=request.user)
-    
-    # Check karo ki payment hua hai ya nahi
-    if not order.is_paid:
-        raise Http404("Payment not completed!")
-    
-    # PDF file check karo
-    if not order.ebook.pdf_file:
-        raise Http404("PDF file missing!")
-        
-    # File download karwao
-    file_path = order.ebook.pdf_file.path
-    response = FileResponse(
-        open(file_path, 'rb'),
-        as_attachment=True,
-        filename=f"{order.ebook.title}.pdf" # Download hone wali file ka naam
+    order = get_object_or_404(
+        Order,
+        download_token=token,
+        user=request.user
     )
-    return response
+
+    if order.status != 'paid':
+        raise Http404("Payment not completed!")
+
+    if not order.ebook or not order.ebook.pdf_file:
+        raise Http404("PDF file missing!")
+
+    try:
+        file = order.ebook.pdf_file.open('rb')
+
+        return FileResponse(
+            file,
+            as_attachment=True,
+            filename=f"{order.ebook.title}.pdf",
+            content_type="application/pdf"
+        )
+    except Exception:
+        raise Http404("PDF file could not be accessed")
 def privacy_policy(request):
     return render(request, 'store/privacy.html')
 
@@ -196,11 +200,26 @@ def free_notes(request):
     }
     return render(request, 'store/notes.html', context)
 
+
 def download_note(request, note_id):
     note = get_object_or_404(Note, id=note_id)
+
     if not note.pdf_file:
         raise Http404("File missing")
-    return FileResponse(open(note.pdf_file.path, 'rb'), as_attachment=True, filename=f"{note.title}.pdf")
+
+    try:
+        file = note.pdf_file.open('rb')
+
+        return FileResponse(
+            file,
+            as_attachment=True,
+            filename=f"{note.title}.pdf",
+            content_type="application/pdf"
+        )
+
+    except Exception:
+        raise Http404("PDF file could not be accessed")
+
 @login_required
 def pack_checkout(request, pack_id):
     pack = get_object_or_404(SurvivalPack, id=pack_id)

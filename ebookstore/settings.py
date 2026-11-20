@@ -1,7 +1,7 @@
 """
 Django settings for ebookstore project.
 """
-
+from dotenv import load_dotenv
 from pathlib import Path
 import os
 import dj_database_url # Deploy ke liye
@@ -9,13 +9,29 @@ import dj_database_url # Deploy ke liye
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / '.env')
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(!%a6lw2jhet8gth*5pt!_!of-8@pu)(!w-5lf8_)q7*$2b10y'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv(
+    'ALLOWED_HOSTS',
+    '127.0.0.1,localhost'
+).split(',')
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # Application definition
 INSTALLED_APPS = [
@@ -28,6 +44,7 @@ INSTALLED_APPS = [
     
     # Tera App
     'store',
+    'storages', # AWS S3 ke liye
     
     # Google Login (allauth) ke liye
     'django.contrib.sites',
@@ -37,7 +54,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-SITE_ID = 1
+SITE_ID = 2
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -78,13 +95,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ebookstore.wsgi.application'
 
-# Database (Render pe deploy hone pe automatic PostgreSQL set ho jayega)
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
+        conn_max_age=600,
+        ssl_require=bool(os.getenv('DATABASE_URL'))
     )
 }
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -104,22 +121,41 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files (Images & PDFs)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Media files - Supabase Storage (S3)
+AWS_ACCESS_KEY_ID = os.getenv('SUPABASE_S3_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('SUPABASE_S3_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('SUPABASE_S3_BUCKET')
+AWS_S3_ENDPOINT_URL = os.getenv('SUPABASE_S3_ENDPOINT')
+AWS_S3_REGION_NAME = os.getenv('SUPABASE_S3_REGION')
+AWS_S3_ADDRESSING_STYLE = 'path'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+AWS_S3_FILE_OVERWRITE = False
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Razorpay Keys
-RAZORPAY_KEY_ID = 'rzp_test_TzJnkbDM8kIdLo'
-RAZORPAY_KEY_SECRET = 'Yci562KSloWQbXizWLKDiMNL'
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'sirkrish947@gmail.com'  # <-- Yahan apna Gmail daalo
-EMAIL_HOST_PASSWORD = 'vipin@95A'  # <-- Yahan wo 16-digit App Password daalo
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'Rulerz.store <sirkrish947@gmail.com>'
